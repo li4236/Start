@@ -308,7 +308,7 @@ object Main extends App {
     meteordb.map(x => x.collection(col).create())
     meteordb.map(x => x.collection[BSONCollection](col)
       .insert[BSONDocument](false)
-      .many(documents))
+      .many(documents)
   }
 
   def createHistoryCollections(col: String): Unit = {

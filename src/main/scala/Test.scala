@@ -15,7 +15,7 @@ import akka.util.ByteString
 import amqpMongo.Main.{amqpUri, client, dbMeteor, dbfull, dbupdates, theUpdates, updatetimestamp}
 import com.mongodb.client.model.changestream.FullDocument
 import org.mongodb.scala.{Document, MongoClient}
-import org.mongodb.scala.model.{Aggregates, Filters, changestream}
+import org.mongodb.scala.model.{Aggregates, Filters, Updates, changestream}
 import reactivemongo.api.MongoDriver
 //import amqpMongo.Main.{createHistoryCollections, createMeteorCollections, historydb, ldcProtocolConversionGraph, meteordb, theUpdates, watchMoreCollectionsGraph}
 import bean.RMQInfo
@@ -194,14 +194,17 @@ object Test {
     println(collectionName)
 
     val sourceFull: Source[changestream.ChangeStreamDocument[Document], NotUsed] =
+
       MongoSource(mongoCollection
       .watch(List(Aggregates.`match`(Filters.and(Filters.eq("documentKey._id", "history"),
         Filters.in("operationType", "update")))))
-      .fullDocument(FullDocument.UPDATE_LOOKUP))
+
+        .fullDocument(FullDocument.UPDATE_LOOKUP))
 
     val sourceUpdates: Source[changestream.ChangeStreamDocument[Document], NotUsed] =
       MongoSource(mongoCollection
-      .watch(List(Aggregates.`match`(Filters.and(Filters.ne("documentKey._id", "history"),
+
+        .watch(List(Aggregates.`match`(Filters.and(Filters.ne("documentKey._id", "history"),
         //        Filters.exists("updateDescription.updatedFields.ts",false),
         Filters.in("operationType", "update")))))
       .fullDocument(FullDocument.UPDATE_LOOKUP))
@@ -351,6 +354,27 @@ object Test {
     changeStreamGraph.run()
 
   }
+
+
+
+  val flow1 = Flow[IncomingMessage].map[(ByteString, Any)](msg => (msg.bytes,
+    msg.properties
+      .getHeaders
+      .get("timestamp_in_ms")
+      .asInstanceOf[Long])
+  )
+
+  val pdo_out_value = Flow[(ByteString, Any)]
+    .map[DocumentUpdate](bl => DocumentUpdate(
+    filter = Filters.and(
+      Filters.exists("po_stat"),
+      Filters.exists("ts")),
+    update = Updates.combine(
+      Updates.set("po_stat.po", java.lang.Byte.toUnsignedInt(bl._1(2))),
+      Updates.set("po_stat.po_act", java.lang.Byte.toUnsignedInt(bl._1(3))),
+      Updates.set("ts", bl._2)
+    )))
+
 
   def postReq(url: String): Unit =
   {
