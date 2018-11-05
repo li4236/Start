@@ -69,11 +69,11 @@ object Test {
   }
 
   def initMongoDb():Unit ={
-//    val driver = new MongoDriver
-//    val connection = driver.connection(List("172.18.0.5:27017"))
-//    val meteordb = connection.database("meteor")
-//    val historydb = connection.database("full")
-//    val historydb_updates = connection.database("updates")
+    val driver = new MongoDriver
+    val connection = driver.connection(List("172.18.0.5:27017"))
+    val meteordb = connection.database("meteor")
+    val historydb = connection.database("full")
+    val historydb_updates = connection.database("updates")
   }
 
 
@@ -142,7 +142,7 @@ object Test {
     println("list2 result: ", q)
 
 
-    val test = dbMeteor.getCollection();
+//    val test = dbMeteor.getCollection();
 //    val meteorresult = meteordb.flatMap(x => x.collectionNames)
 
 //    println(meteorresult);

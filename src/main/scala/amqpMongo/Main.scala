@@ -306,6 +306,7 @@ object Main extends App {
 
   def createMeteorCollections(col: String): Unit = {
     meteordb.map(x => x.collection(col).create())
+
     meteordb.map(x => x.collection[BSONCollection](col)
       .insert[BSONDocument](false)
       .many(documents))
