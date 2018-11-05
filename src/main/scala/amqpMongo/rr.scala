@@ -1,0 +1,5 @@
+package amqpMongo
+
+class rr {
+
+}
